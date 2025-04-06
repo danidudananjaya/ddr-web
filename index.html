@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDR Saloon | Premium Hair & Beauty</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"></script>
+    
+    <!-- p5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #d53369 0%, #daae51 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .testimonial-carousel {
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+        
+        .carousel-item {
+            flex: 0 0 100%;
+        }
+        
+        #p5Canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -2;
+            opacity: 0.05;
+        }
+        
+        /* Custom scroll bar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #d53369;
+            border-radius: 4px;
+        }
+        
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-neutral-50 text-gray-800 antialiased">
+    <!-- p5.js Background Canvas -->
+    <div id="p5Canvas"></div>
+    
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md text-gray-800 py-3 px-4 fixed w-full z-50 shadow-sm">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <!-- Logo -->
+                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-600 to-amber-500 flex items-center justify-center text-white font-bold">DS</div>
+                <a href="#home" class="text-2xl font-bold">
+                    <span class="gradient-text">DDR</span> Saloon
+                </a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex gap-8">
+                <a href="#home" class="hover:text-pink-600 font-medium transition-colors">Home</a>
+                <a href="#services" class="hover:text-pink-600 font-medium transition-colors">Services</a>
+                <a href="#stylists" class="hover:text-pink-600 font-medium transition-colors">Our Stylists</a>
+                <a href="#gallery" class="hover:text-pink-600 font-medium transition-colors">Gallery</a>
+                <a href="#testimonials" class="hover:text-pink-600 font-medium transition-colors">Testimonials</a>
+                <a href="#about" class="hover:text-pink-600 font-medium transition-colors">About</a>
+                <a href="#contact" class="hover:text-pink-600 font-medium transition-colors">Contact</a>
+            </div>
+            
+            <!-- CTA Button -->
+            <div class="hidden md:block">
+                <a href="#booking" class="bg-gradient-to-r from-pink-600 to-amber-500 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg transition-all">Book Now</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="menuBtn" class="md:hidden text-gray-800 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 h-screen w-4/5 bg-white z-50 p-5 shadow-xl">
+        <div class="flex justify-between items-center mb-10">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-600 to-amber-500 flex items-center justify-center text-white font-bold text-xs">DS</div>
+                <span class="text-xl font-bold">
+                    <span class="gradient-text">DDR</span> Saloon
+                </span>
+            </div>
+            <button id="closeMenuBtn" class="text-gray-800 focus:outline-none">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div class="flex flex-col gap-5">
+            <a href="#home" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">Home</a>
+            <a href="#services" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">Services</a>
+            <a href="#stylists" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">Our Stylists</a>
+            <a href="#gallery" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">Gallery</a>
+            <a href="#testimonials" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">Testimonials</a>
+            <a href="#about" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">About</a>
+            <a href="#contact" class="hover:text-pink-600 font-medium transition-colors py-2 border-b border-gray-100">Contact</a>
+            <a href="#booking" class="bg-gradient-to-r from-pink-600 to-amber-500 text-white px-5 py-3 rounded-full font-medium text-center mt-5">Book Now</a>
+        </div>
+    </div>
+    
+    <!-- Hero Section with Three.js -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <canvas id="hero-canvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+        <div class="container mx-auto px-4 py-20 md:py-0 z-10 text-center">
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                <span class="gradient-text">Transform</span> Your Look
+            </h1>
+            <p class="text-xl md:text-2xl mb-10 max-w-2xl mx-auto">Experience luxury hair care and styling at DDR Saloon, where beauty meets excellence.</p>
+            <div class="flex flex-col md:flex-row gap-5 justify-center">
+                <a href="#booking" class="bg-gradient-to-r from-pink-600 to-amber-500 text-white px-8 py-3 rounded-full font-medium hover:shadow-lg transition-all">Book Appointment</a>
+                <a href="#services" class="border-2 border-gray-800 px-8 py-3 rounded-full font-medium hover:bg-gray-800 hover:text-white transition-all">Explore Services</a>
+            </div>
+            
+            <div class="mt-20 flex flex-wrap justify-center gap-10">
+                <div class="text-center">
+                    <div class="text-3xl font-bold gradient-text mb-2">10+</div>
+                    <div class="text-gray-600">Expert Stylists</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold gradient-text mb-2">5K+</div>
+                    <div class="text-gray-600">Happy Clients</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold gradient-text mb-2">15+</div>
+                    <div class="text-gray-600">Years Experience</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold gradient-text mb-2">20+</div>
+                    <div class="text-gray-600">Award Winning</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-5">Our Premium <span class="gradient-text">Services</span></h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Discover our range of premium hair and beauty services designed to enhance your natural beauty and boost your confidence.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <!-- Haircuts & Styling -->
+                <div class="service-card bg-neutral-50 rounded-xl p-8 shadow-sm hover:shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-cut text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Haircuts & Styling</h3>
+                    <p class="text-gray-600 mb-5">Expert cuts and styling tailored to your face shape and personal style preferences.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Women's Haircuts</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Men's Haircuts</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Children's Haircuts</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Blow Dry & Styling</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Special Occasion Styling</span>
+                        </li>
+                    </ul>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">From $35</span>
+                        <a href="#booking" class="text-pink-600 hover:text-pink-700 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Hair Coloring -->
+                <div class="service-card bg-neutral-50 rounded-xl p-8 shadow-sm hover:shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-palette text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Hair Coloring</h3>
+                    <p class="text-gray-600 mb-5">Transform your look with our premium coloring services using high-quality products.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Full Color</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Highlights/Lowlights</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Balayage</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Ombre</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Root Touch-Up</span>
+                        </li>
+                    </ul>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">From $65</span>
+                        <a href="#booking" class="text-pink-600 hover:text-pink-700 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Hair Treatments -->
+                <div class="service-card bg-neutral-50 rounded-xl p-8 shadow-sm hover:shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-pump-soap text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Hair Treatments</h3>
+                    <p class="text-gray-600 mb-5">Revitalize and nourish your hair with our specialized treatment services.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Keratin Treatment</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Deep Conditioning</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Scalp Treatments</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Hair Masks</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Hair Botox</span>
+                        </li>
+                    </ul>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">From $55</span>
+                        <a href="#booking" class="text-pink-600 hover:text-pink-700 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Nail Services -->
+                <div class="service-card bg-neutral-50 rounded-xl p-8 shadow-sm hover:shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-hand-sparkles text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Nail Services</h3>
+                    <p class="text-gray-600 mb-5">Complete your look with our professional nail care and artistic nail design services.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Manicure</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Pedicure</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Gel Polish</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Acrylic Extensions</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Nail Art</span>
+                        </li>
+                    </ul>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">From $40</span>
+                        <a href="#booking" class="text-pink-600 hover:text-pink-700 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Facial & Skincare -->
+                <div class="service-card bg-neutral-50 rounded-xl p-8 shadow-sm hover:shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-spa text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Facial & Skincare</h3>
+                    <p class="text-gray-600 mb-5">Rejuvenate your skin with our customized facial treatments designed for your skin type.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Classic Facial</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Deep Cleansing</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Anti-Aging Treatments</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Hydrating Masks</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>LED Light Therapy</span>
+                        </li>
+                    </ul>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">From $75</span>
+                        <a href="#booking" class="text-pink-600 hover:text-pink-700 font-medium">Book Now →</a>
+                    </div>
+                </div>
+                
+                <!-- Makeup Services -->
+                <div class="service-card bg-neutral-50 rounded-xl p-8 shadow-sm hover:shadow-xl">
+                    <div class="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-magic text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Makeup Services</h3>
+                    <p class="text-gray-600 mb-5">Professional makeup application for any occasion using premium cosmetic products.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Everyday Makeup</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Special Occasion</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Bridal Makeup</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Makeup Lessons</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-pink-600 mr-2"></i>
+                            <span>Lash Application</span>
+                        </li>
+                    </ul>
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-bold">From $60</span>
+                        <a href="#booking" class="text-pink-600 hover:text-pink-700 font-medium">Book Now →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#packages" class="inline-flex items-center text-lg font-medium text-pink-600 hover:text-pink-700">
+                    View Special Packages
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stylists Section -->
+    <section id="stylists" class="py-20 bg-neutral-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-5">Meet Our <span class="gradient-text">Expert Stylists</span></h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Our team of talented professionals is dedicated to making you look and feel your best.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+                <!-- Stylist 1 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <div class="h-64 bg-gradient-to-br from-pink-200 to-amber-100 flex items-center justify-center">
+                        <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center text-pink-600">
+                            <i class="fas fa-user text-4xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Alexandra Smith</h3>
+                        <p class="text-pink-600 font-medium mb-3">Senior Hair Stylist</p>
+                        <p class="text-gray-600 mb-4">Specializing in precision cuts and creative color techniques with over 10 years of experience.</p>
+                        <div class="flex justify-center gap-4">
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-pinterest"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stylist 2 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <div class="h-64 bg-gradient-to-br from-pink-200 to-amber-100 flex items-center justify-center">
+                        <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center text-pink-600">
+                            <i class="fas fa-user text-4xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Michael Johnson</h3>
+                        <p class="text-pink-600 font-medium mb-3">Color Specialist</p>
+                        <p class="text-gray-600 mb-4">Expert in balayage, ombre, and creative color techniques that enhance your natural beauty.</p>
+                        <div class="flex justify-center gap-4">
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-pinterest"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stylist 3 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <div class="h-64 bg-gradient-to-br from-pink-200 to-amber-100 flex items-center justify-center">
+                        <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center text-pink-600">
+                            <i class="fas fa-user text-4xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Sophia Rodriguez</h3>
+                        <p class="text-pink-600 font-medium mb-3">Nail Artist</p>
+                        <p class="text-gray-600 mb-4">Creating stunning nail designs and providing exceptional nail care for all occasions.</p>
+                        <div class="flex justify-center gap-4">
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-pinterest"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stylist 4 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                    <div class="h-64 bg-gradient-to-br from-pink-200 to-amber-100 flex items-center justify-center">
+                        <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center text-pink-600">
+                            <i class="fas fa-user text-4xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">David Wilson</h3>
+                        <p class="text-pink-600 font-medium mb-3">Skincare Specialist</p>
+                        <p class="text-gray-600 mb-4">Expert in facial treatments and skincare regimens tailored to your unique skin type and concerns.</p>
+                        <div class="flex justify-center gap-4">
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors">
+                                <i class="fab fa-facebook
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            
+                <!-- Testimonials Section -->
+                <section id="testimonials" class="py-20 bg-white">
+                    <div class="container mx-auto px-4">
+                        <div class="text-center mb-16">
+                            <h2 class="text-3xl md:text-5xl font-bold mb-5">Client <span class="gradient-text">Testimonials</span></h2>
+                            <p class="text-gray-600 max-w-2xl mx-auto">Hear what our clients say about their experiences at DDR Saloon</p>
+                        </div>
+            
+                        <div class="testimonial-carousel max-w-4xl mx-auto">
+                            <div class="carousel-inner">
+                                <!-- Testimonial 1 -->
+                                <div class="carousel-item p-8">
+                                    <div class="bg-neutral-50 rounded-xl p-8 text-center">
+                                        <div class="w-20 h-20 rounded-full bg-gradient-to-r from-pink-600 to-amber-500 mx-auto mb-6 overflow-hidden">
+                                            <img src="https://randomuser.me/api/portraits/women/1.jpg" alt="Client" class="w-full h-full object-cover">
+                                        </div>
+                                        <p class="text-xl font-medium mb-4">Absolutely amazing experience! The stylists are true artists.</p>
+                                        <p class="text-gray-600 mb-4">"I've never felt more confident after leaving a salon. The color treatment I received was exactly what I wanted. Highly recommend DDR Saloon!"</p>
+                                        <div class="text-pink-600 font-medium">- Sarah Johnson</div>
+                                    </div>
+                                </div>
+            
+                                <!-- Testimonial 2 -->
+                                <div class="carousel-item p-8">
+                                    <div class="bg-neutral-50 rounded-xl p-8 text-center">
+                                        <div class="w-20 h-20 rounded-full bg-gradient-to-r from-pink-600 to-amber-500 mx-auto mb-6 overflow-hidden">
+                                            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Client" class="w-full h-full object-cover">
+                                        </div>
+                                        <p class="text-xl font-medium mb-4">Best men's haircut I've ever had!</p>
+                                        <p class="text-gray-600 mb-4">"I was hesitant to try a new salon, but DDR exceeded all expectations. The attention to detail is unmatched."</p>
+                                        <div class="text-pink-600 font-medium">- Michael Chen</div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <!-- Carousel Controls -->
+                            <div class="flex justify-center gap-4 mt-8">
+                                <button class="carousel-control prev-btn w-12 h-12 rounded-full bg-pink-600 text-white hover:bg-pink-700 transition-colors">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="carousel-control next-btn w-12 h-12 rounded-full bg-pink-600 text-white hover:bg-pink-700 transition-colors">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            
+                <!-- Gallery Section -->
+                <section id="gallery" class="py-20 bg-neutral-50">
+                    <div class="container mx-auto px-4">
+                        <div class="text-center mb-16">
+                            <h2 class="text-3xl md:text-5xl font-bold mb-5">Our <span class="gradient-text">Gallery</span></h2>
+                            <p class="text-gray-600 max-w-2xl mx-auto">Explore our work through these beautiful transformations</p>
+                        </div>
+            
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- Gallery Items -->
+                            <div class="aspect-square bg-pink-100 rounded-xl overflow-hidden">
+                                <img src="https://source.unsplash.com/random/600x600/?hairstyle" alt="Gallery" class="w-full h-full object-cover hover:scale-105 transition-transform">
+                            </div>
+                            <!-- Repeat similar blocks for other gallery items -->
+                            <!-- Add 7 more gallery items -->
+                        </div>
+                    </div>
+                </section>
+            
+                <!-- Contact Section -->
+                <section id="contact" class="py-20 bg-white">
+                    <div class="container mx-auto px-4">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="text-center mb-16">
+                                <h2 class="text-3xl md:text-5xl font-bold mb-5">Contact <span class="gradient-text">Us</span></h2>
+                                <p class="text-gray-600 max-w-2xl mx-auto">Get in touch to book your appointment or ask any questions</p>
+                            </div>
+            
+                            <div class="grid md:grid-cols-2 gap-12">
+                                <div class="space-y-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold mb-1">Our Location</h3>
+                                            <p class="text-gray-600">123 Beauty Street<br>New York, NY 10001</p>
+                                        </div>
+                                    </div>
+            
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+                                            <i class="fas fa-phone"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold mb-1">Call Us</h3>
+                                            <p class="text-gray-600">+1 (555) 123-4567</p>
+                                        </div>
+                                    </div>
+            
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold mb-1">Email Us</h3>
+                                            <p class="text-gray-600">info@ddrsaloon.com</p>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <form class="space-y-6">
+                                    <div>
+                                        <input type="text" placeholder="Your Name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-pink-500">
+                                    </div>
+                                    <div>
+                                        <input type="email" placeholder="Your Email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-pink-500">
+                                    </div>
+                                    <div>
+                                        <textarea placeholder="Your Message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-pink-500"></textarea>
+                                    </div>
+                                    <button type="submit" class="w-full bg-gradient-to-r from-pink-600 to-amber-500 text-white px-8 py-3 rounded-full font-medium hover:shadow-lg transition-all">
+                                        Send Message
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            
+                <!-- Footer -->
+                <footer class="bg-gray-900 text-white py-12">
+                    <div class="container mx-auto px-4">
+                        <div class="grid md:grid-cols-4 gap-8">
+                            <div>
+                                <h3 class="text-xl font-bold mb-4">DDR Saloon</h3>
+                                <p class="text-gray-400">Premium hair care and beauty services with a personal touch.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-4">Quick Links</h4>
+                                <ul class="space-y-2 text-gray-400">
+                                    <li><a href="#services" class="hover:text-pink-500 transition-colors">Services</a></li>
+                                    <li><a href="#stylists" class="hover:text-pink-500 transition-colors">Stylists</a></li>
+                                    <li><a href="#gallery" class="hover:text-pink-500 transition-colors">Gallery</a></li>
+                                    <li><a href="#contact" class="hover:text-pink-500 transition-colors">Contact</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-4">Follow Us</h4>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-gray-400 hover:text-pink-500 transition-colors">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                    <a href="#" class="text-gray-400 hover:text-pink-500 transition-colors">
+                                        <i class="fab fa-facebook"></i>
+                                    </a>
+                                    <a href="#" class="text-gray-400 hover:text-pink-500 transition-colors">
+                                        <i class="fab fa-tiktok"></i>
+                                    </a>
+                                    <a href="#" class="text-gray-400 hover:text-pink-500 transition-colors">
+                                        <i class="fab fa-pinterest"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-4">Newsletter</h4>
+                                <form class="flex gap-2">
+                                    <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none">
+                                    <button type="submit" class="bg-pink-600 px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                            <p>&copy; 2023 DDR Saloon. All rights reserved.</p>
+                        </div>
+                    </div>
+                </footer>
+            
+                <!-- Scripts -->
+                <script>
+                    // Mobile Menu Toggle
+                    const menuBtn = document.getElementById('menuBtn');
+                    const closeMenuBtn = document.getElementById('closeMenuBtn');
+                    const mobileMenu = document.getElementById('mobileMenu');
+            
+                    menuBtn.addEventListener('click', () => {
+                        mobileMenu.classList.add('open');
+                    });
+            
+                    closeMenuBtn.addEventListener('click', () => {
+                        mobileMenu.classList.remove('open');
+                    });
+            
+                    // Testimonial Carousel
+                    const carouselInner = document.querySelector('.carousel-inner');
+                    const carouselItems = document.querySelectorAll('.carousel-item');
+                    let currentIndex = 0;
+            
+                    document.querySelector('.next-btn').addEventListener('click', () => {
+                        currentIndex = (currentIndex + 1) % carouselItems.length;
+                        updateCarousel();
+                    });
+            
+                    document.querySelector('.prev-btn').addEventListener('click', () => {
+                        currentIndex = (currentIndex - 1 + carouselItems.length) % carouselItems.length;
+                        updateCarousel();
+                    });
+            
+                    function updateCarousel() {
+                        carouselInner.style.transform = `translateX(-${currentIndex * 100}%)`;
+                    }
+            
+                    // GSAP Animations
+                    gsap.from('nav', { duration: 1, y: -100, opacity: 0, ease: 'power4.out' });
+                    gsap.from('#home h1', { duration: 1, y: 50, opacity: 0, delay: 0.5 });
+                    gsap.from('#home p', { duration: 1, y: 30, opacity: 0, delay: 0.8 });
+                    gsap.from('#home .flex', { duration: 1, y: 30, opacity: 0, delay: 1 });
+            
+                    // Three.js Background
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#hero-canvas') });
+            
+                    // Add your Three.js animation setup here
+            
+                    // p5.js Background
+                    new p5(p => {
+                        p.setup = () => {
+                            p.createCanvas(window.innerWidth, window.innerHeight).parent('p5Canvas');
+                            p.noStroke();
+                        };
+            
+                        p.draw = () => {
+                            p.fill(0, 5);
+                            p.rect(0, 0, p.width, p.height);
+                            p.fill('#d53369');
+                            p.ellipse(p.mouseX, p.mouseY, 50, 50);
+                        };
+                    });
+                </script>
+            </body>
+            </html>
